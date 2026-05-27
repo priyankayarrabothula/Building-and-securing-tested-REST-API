@@ -105,7 +105,7 @@ jobs:
 
       - name: Start services with docker-compose
         run: |
-          docker-compose -f docker-compose.yml config
+          docker compose -f docker-compose.yml config
           echo "docker-compose.yml is valid"
 
       - name: Validate Dockerfile syntax
@@ -135,9 +135,11 @@ jobs:
 
       - name: Verify no node_modules in git
         run: |
-          if git ls-files | grep -E 'node_modules/' | head -n 5; then
+          if git ls-files | grep -q 'node_modules/'; then
             echo "Error: node_modules found in repository!"
             exit 1
+          else
+            echo "✓ Security check passed: node_modules properly excluded from git"
           fi
 
   build-status:
