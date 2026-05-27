@@ -2,12 +2,19 @@
 
 A complete, tested, and secure REST API for gym reviews built with Express.js, Firebase authentication, React frontend, and comprehensive test coverage.
 
+**📦 Deployed**: 
+- Frontend: `[Add your Vercel URL here after deployment]`
+- Backend: `[Add your Render URL here after deployment]`
+
 ## Table of Contents
 
 - [Setup](#setup)
 - [Testing](#testing)
+- [Docker & Containerization](#docker--containerization)
+- [Deployment](#deployment-to-cloud-platforms)
 - [Authentication](#authentication)
 - [Security Decisions](#security-decisions)
+- [Reflections](#reflections)
 - [Reflections](#reflections)
 
 ## Setup
@@ -305,6 +312,8 @@ if (!name || !location) {
 3. **Firebase**: Chose token-based auth for better API security patterns
 4. **In-Memory Database**: Kept focus on testing and security
 5. **Vitest**: Modern test runner with excellent mocking and React support
+6. **Docker**: Multi-stage builds minimize image size and improve security
+7. **Vercel + Render**: Industry-standard platforms with excellent DX and free tiers
 
 ### Challenges & Solutions
 
@@ -320,12 +329,180 @@ if (!name || !location) {
 - **Problem**: Needed to ensure tokens are correctly extracted from Firebase and sent to backend
 - **Solution**: Created `AuthContext` to manage token lifecycle and add tokens to all requests
 
+**Challenge 4: Docker Environment Variables**
+- **Problem**: Secrets cannot be built into images, but apps need configuration
+- **Solution**: Use Docker's `-e` flag and cloud platform environment variable management
+
+**Challenge 5: Production vs Development URLs**
+- **Problem**: Frontend and backend URLs change between local, staging, and production
+- **Solution**: Use environment variables for all URLs (API_URL, FRONTEND_URL)
+
 ### What We'd Do Differently
 
 1. **Database**: Use MongoDB with encryption at rest for production
 2. **Rate Limiting**: Add middleware to prevent brute force attacks
 3. **Logging**: Implement structured logging to audit authentication
 4. **Refresh Tokens**: Implement refresh token rotation for longer sessions
+
+### Why Vercel + Render?
+
+- **Vercel**: Optimized for React, automatic git deployments, edge locations, generous free tier
+- **Render**: Excellent Docker support, managed PostgreSQL, reliable uptime, free tier includes HTTPS
+---
+
+## Docker & Containerization
+
+### Build and Run Locally with Docker
+
+#### Build Images
+```bash
+# Build backend image
+docker build -t gym-api-backend:latest ./backend
+
+# Build frontend image
+docker build -t gym-api-frontend:latest ./frontend
+```
+
+#### Run with Docker Compose
+```bash
+# Create .env file from examples
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+
+# Edit .env files with your credentials
+# nano backend/.env
+# nano frontend/.env
+
+# Start both services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+### Key Docker Decisions
+
+1. **Multi-Stage Builds**: Reduces image size by removing build dependencies (Node.js, npm packages)
+2. **Alpine Linux**: Smaller base images (node:22-alpine) for faster deployments
+3. **Health Checks**: Ensure containers are ready before routing traffic
+4. **No Hardcoded Secrets**: Environment variables passed at runtime, not built into image
+
+---
+
+## Deployment to Cloud Platforms
+
+### Recommended Stack: Vercel (Frontend) + Render (Backend)
+
+This is the recommended setup for this project. Both platforms offer generous free tiers and excellent performance.
+
+#### Backend Deployment on Render
+
+1. **Create Render Account**: Go to [https://render.com](https://render.com) and sign up
+
+2. **Create New Web Service**:
+   - Click "New +"  → "Web Service"
+   - Connect your GitHub repository
+   - Select the repository
+
+3. **Configure Service**:
+   - **Name**: `gym-api` (or your choice)
+   - **Environment**: `Docker`
+   - **Build Command**: (Render auto-detects from Dockerfile)
+   - **Start Command**: (Render auto-detects)
+
+4. **Add Environment Variables**:
+   - Click "Environment" in the dashboard
+   - Add all variables from `backend/.env.example`:
+     ```
+     FIREBASE_PROJECT_ID=your_project_id
+     FIREBASE_PRIVATE_KEY=your_private_key
+     FIREBASE_CLIENT_EMAIL=your_client_email
+     FRONTEND_URL=https://your-frontend.vercel.app
+     NODE_ENV=production
+     PORT=10000
+     ```
+   - **Important**: Set `FRONTEND_URL` to your Vercel frontend URL
+
+5. **Deploy**:
+   - Push to GitHub main branch
+   - Render auto-deploys on push
+   - Backend URL will be: `https://gym-api-{random}.onrender.com` (shown on dashboard)
+
+#### Frontend Deployment on Vercel
+
+1. **Create Vercel Account**: Go to [https://vercel.com](https://vercel.com) and sign up
+
+2. **Import Project**:
+   - Click "Add New..." → "Project"
+   - Import your GitHub repository
+
+3. **Configure Build Settings**:
+   - **Framework**: React
+   - **Build Command**: `cd frontend && npm run build`
+   - **Output Directory**: `frontend/dist`
+   - **Install Command**: `cd frontend && npm install`
+
+4. **Add Environment Variables** (in project settings):
+   ```
+   VITE_FIREBASE_API_KEY=your_api_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   VITE_API_URL=https://gym-api-{random}.onrender.com
+   ```
+   - **Important**: Update `VITE_API_URL` with your actual Render backend URL
+
+5. **Deploy**:
+   - Click "Deploy"
+   - Vercel builds and deploys automatically
+   - Frontend URL: `https://your-project.vercel.app`
+
+#### Update Firebase Configuration for Production
+
+1. **Go to Firebase Console** → Your Project → Settings → Authorized Domains
+2. **Add deployed URLs**:
+   - `your-project.vercel.app` (frontend)
+3. **Update Render deployment**:
+   - Backend must know the frontend URL for CORS
+   - Re-deploy Render after updating `FRONTEND_URL` env var
+
+### Testing the Deployed Application
+
+```bash
+# Test backend API
+curl https://gym-api-{random}.onrender.com/gyms
+
+# Expected response:
+# [{"id":"1","name":"FitnessFirst Downtown",...}, ...]
+```
+
+Visit `https://your-project.vercel.app` in browser:
+- Should see login button
+- Click to login with Google
+- After login, should see your profile and gym list
+- Should be able to add reviews to gyms
+
+## Production Deployment Checklist
+
+Before deploying to production, verify all of these:
+
+- [ ] **1. No Secrets Committed**: Run `git log -p --all -S"FIREBASE_PRIVATE_KEY"` to verify no secrets in history
+- [ ] **2. CORS Restricted**: `FRONTEND_URL` in backend points to deployed frontend, not `*`
+- [ ] **3. Tokens Secure**: Tokens sent in `Authorization: Bearer` header, NOT in URL or localStorage
+- [ ] **4. withCredentials Set**: Frontend requests include credentials flag
+- [ ] **5. Docker Image Clean**: No `.env` files, `.git`, or `node_modules` in Docker image
+- [ ] **6. Backend Uses HTTPS**: Deployed backend is served over HTTPS (most platforms auto-enable)
+- [ ] **7. Auth Redirects**: Firebase redirects point to deployed frontend URL, not localhost
+- [ ] **8. Environment Variables**: All required vars set in cloud platform (not in code)
+- [ ] **9. Tests Pass**: Run `npm test` in both frontend and backend - all tests pass
+- [ ] **10. CI Pipeline Works**: GitHub Actions runs successfully on push
+
+---
 
 ---
 

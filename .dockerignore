@@ -1,0 +1,57 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Environment variables (NEVER include .env in Docker image)
+.env
+.env.*
+
+# Documentation
+README.md
+CHANGELOG.md
+
+# Tests and coverage
+coverage
+.nyc_output
+__tests__
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Package managers
+package-lock.json
+yarn.lock
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Build artifacts
+dist
+build
+.next
+out
+
+# Docker compose
+docker-compose.yml
+docker-compose.*.yml
+
+# Misc
+.eslintcache
+.prettierignore
