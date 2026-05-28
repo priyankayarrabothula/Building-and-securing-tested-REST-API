@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: gym-api-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    plan: starter
+    envVars:
+      - key: FIREBASE_PROJECT_ID
+        scope: build,run
+      - key: FIREBASE_PRIVATE_KEY
+        scope: build,run
+      - key: FIREBASE_CLIENT_EMAIL
+        scope: build,run
+      - key: FRONTEND_URL
+        value: https://gym-tracker.vercel.app
+        scope: run
+      - key: NODE_ENV
+        value: production
+        scope: run
