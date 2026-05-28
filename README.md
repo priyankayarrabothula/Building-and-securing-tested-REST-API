@@ -3,8 +3,8 @@
 A complete, tested, and secure REST API for gym reviews built with Express.js, Firebase authentication, React frontend, and comprehensive test coverage.
 
 **📦 Deployed**: 
-- Frontend: `[Add your Vercel URL here after deployment]`
-- Backend: `[Add your Render URL here after deployment]`
+- Frontend: [https://building-and-securing-tested-rest-a.vercel.app/](https://building-and-securing-tested-rest-a.vercel.app/)
+- Backend: [https://gym-api-2a1d.onrender.com/gyms](https://gym-api-2a1d.onrender.com/gyms)
 
 ## Table of Contents
 
